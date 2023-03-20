@@ -25,7 +25,7 @@
     #error "Unsupported system architecture, it should be 32 or 64 bit"
 #endif
 
-#define BLOCK_SZIE sizeof(block_t)
+#define BLOCK_SIZE sizeof(block_t)
 
 #define TINY_ZONE getpagesize() * TINY_PAGE
 #define SMALL_ZONE getpagesize() * SMALL_PAGE
@@ -42,10 +42,10 @@ enum {
     LARGE
 };
 
-#define DEFINE_BLOCK_SIZE(size) ((size + BLOCK_SZIE <= TINY_BLOCK_SIZE) ? TINY_ZONE : \
-                                (size + BLOCK_SZIE <= SMALL_BLOCK_SIZE) ? SMALL_ZONE : size + BLOCK_SZIE)
-#define DEFINE_BLOCK_ZONE(size) ((size + BLOCK_SZIE <= TINY_BLOCK_SIZE) ? TINY : \
-                                (size + BLOCK_SZIE <= SMALL_BLOCK_SIZE) ? SMALL : LARGE)
+#define DEFINE_BLOCK_SIZE(size) ((size + BLOCK_SIZE <= TINY_BLOCK_SIZE) ? TINY_ZONE : \
+                                (size + BLOCK_SIZE <= SMALL_BLOCK_SIZE) ? SMALL_ZONE : size + BLOCK_SIZE)
+#define DEFINE_BLOCK_ZONE(size) ((size + BLOCK_SIZE <= TINY_BLOCK_SIZE) ? TINY : \
+                                (size + BLOCK_SIZE <= SMALL_BLOCK_SIZE) ? SMALL : LARGE)
 
 /* -- Structures */
 
@@ -54,6 +54,7 @@ struct s_block {
     uint8_t     zone : 2;
     uint8_t     is_free : 2;
     size_t      size;
+    block_t*    prev;
     block_t*    next;
 };
 

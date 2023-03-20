@@ -1,33 +1,23 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 
 int main() {
-    int N = 1;
-    int *ptr = mmap (NULL, N * sizeof(int), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
-    if(ptr == MAP_FAILED){
-        printf("1. Mapping Failed\n");
-        return 1;
-    }
+    int n = 0;
 
-    int *ptr2 = mmap(ptr, N * sizeof(int), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
-    if(ptr2 == MAP_FAILED){
-        printf("2. Mapping Failed\n");
-        return 1;
-    }
+    int a = 123456;
+    int* p = &a;
 
-    printf("addr 1: [%p]\n", ptr);
-    printf("addr 2: [%p]\n", ptr2);
-    int err = munmap(ptr, N * sizeof(int));
-    if(err != 0){
-        printf("UnMapping Failed\n");
-        return 1;
-    }
+    printf("n: %d\n", n);
+    printf("a: %d\n", a);
+    printf("pn: %p\n", &n);
+    printf("pa: %p\n", p);
 
-    err = munmap(ptr2, N * sizeof(int));
-    if(err != 0){
-        printf("UnMapping Failed\n");
-        return 1;
-    }
+    memcpy(&n, p, sizeof(int));
 
-    return 0;
+    printf("\nn: %d\n", n);
+    printf("a: %d\n", a);
+    printf("pn: %p\n", &n);
+    printf("pa: %p\n", p);
 }
