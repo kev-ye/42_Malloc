@@ -37,15 +37,16 @@
 #define FALSE 0
 
 enum {
-    TINY = 1,
+    TINY,
     SMALL,
     LARGE
 };
 
+
 #define DEFINE_BLOCK_SIZE(size) ((size + BLOCK_SIZE <= TINY_BLOCK_SIZE) ? TINY_ZONE : \
                                 (size + BLOCK_SIZE <= SMALL_BLOCK_SIZE) ? SMALL_ZONE : size + BLOCK_SIZE)
-#define DEFINE_BLOCK_ZONE(size) ((size + BLOCK_SIZE <= TINY_BLOCK_SIZE) ? TINY : \
-                                (size + BLOCK_SIZE <= SMALL_BLOCK_SIZE) ? SMALL : LARGE)
+#define DEFINE_BLOCK_ZONE(zsize) ((zsize <= TINY_ZONE) ? TINY : \
+                                (zsize <= SMALL_ZONE) ? SMALL : LARGE)
 
 /* -- Structures */
 
