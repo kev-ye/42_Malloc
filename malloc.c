@@ -8,6 +8,7 @@ block_t*	first_block = NULL;
 /* Debug */
 
 void	debug_bar() {
+	printf("\n--- Debug Mode ---\n");
 	if (first_block == NULL) {
 		printf("No blocks allocate!\n");
 		return;
@@ -16,16 +17,18 @@ void	debug_bar() {
 	size_t total_malloc_len = 0;
 
 	printf("Info Mode:\n");
+	printf("---\n[real addr][zone][alloc/free][real bytes][virtual bytes][virtual addr]\n---\n");
 	for (block_t *b = first_block; b != NULL; b = b->next) {
 		total_malloc_len += b->size;
 		printf("[%p][%s][%s]", (void *)b, b->zone == TINY ? "TINY" : b->zone == SMALL ? "SMALL" : "LARGE", b->is_free ? "F" : "A");
-		printf("[%8zu bytes]", b->size);
+		printf("[r: %6zu b]", b->size);
+		printf("[v: %6zu b]", b->size >= 32 ? b->size - BLOCK_SIZE : b->size);
 		if (b->next)
-			printf("[next: %p]\n", (void *)b + b->size);
+			printf("[va: %p]\n", (void *)b + BLOCK_SIZE);
 		else
 			printf("\n");
 		if (b->next && b->zone != b->next->zone)
-			printf("---");
+			printf("---\n");
 	}
 
 	size_t bar_len, zero = 0;
@@ -55,10 +58,12 @@ void	show_alloc_mem() {
 
 	printf("%s : %p\n", zone_name[first_block->zone], first_block);
 	for (block_t *b = first_block; b != NULL; b = b->next) {
-		printf("%p - %p : %zu bytes\n", (void *)b + BLOCK_SIZE, (void *)b + b->size, b->size - BLOCK_SIZE);
-		if (b->next && b->zone != b->next->zone)
+		if (b->is_free == FALSE) {
+			printf("%p - %p : %zu bytes\n", (void *)b + BLOCK_SIZE, (void *)b + b->size, b->size >= BLOCK_SIZE ? b->size- BLOCK_SIZE : b->size);
+			total += b->size;
+		}
+		if (b->next && b->zone != b->next->zone) 
 			printf("%s : %p\n", zone_name[first_block->zone], b);
-		total += b->size;
 	}
 	printf("Total : %zu bytes\n", total);
 }
@@ -83,14 +88,14 @@ void		init_block_zone(block_t *bz, size_t zsize) {
 
 void		split_block(block_t *current_b, size_t size) {
 	block_t second_b;
-	
+
 	memcpy(&second_b, current_b, BLOCK_SIZE);
 	current_b->zone = second_b.zone;
 	current_b->is_free = FALSE;
 	current_b->size = size + BLOCK_SIZE;
 	current_b->prev = second_b.prev; 
 	current_b->next = (void *)current_b + size + BLOCK_SIZE;
-	
+
 	current_b->next->zone = second_b.zone;
 	current_b->next->is_free = TRUE;
 	current_b->next->size = second_b.size - current_b->size;
@@ -100,7 +105,7 @@ void		split_block(block_t *current_b, size_t size) {
 
 block_t*	find_free_block(size_t size) {
 	for (block_t *b = first_block; b != NULL; b = b->next) {
-		if (b->is_free && b->size >= size + BLOCK_SIZE) {// >= ?
+		if (b->is_free && b->size > size + (BLOCK_SIZE * 2)) {
 			split_block(b, size);
 			return b;
 		}
@@ -116,8 +121,6 @@ void*		ft_malloc(size_t size) {
 
 	size_t align_size = ALIGN(size);
 	size_t zone_size = DEFINE_BLOCK_SIZE(align_size);
-
-	printf("allocated size: [%zu]\n", zone_size);
 
 	if (first_block == NULL) {
 		b = mmap(NULL, zone_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -139,23 +142,23 @@ void*		ft_malloc(size_t size) {
 			split_block(b, align_size);
 		}
 	}
-	return b ? b + BLOCK_SIZE : NULL;
+	return b ? (void *)b + BLOCK_SIZE : NULL;
 }
 
 /* Free */
 
 block_t*	merge_free_block(block_t *b) {
     if (b->next && b->next->is_free) {
-        b->size = b->size + BLOCK_SIZE + b->next->size;
+        b->size = b->size + b->next->size;
         b->next = b->next->next;
         if (b->next) {
             b->next->prev = b;
         }
     }
-    return b;
+	return b;
 }
 
-block_t*		get_current_block(void *ptr) {
+block_t*	get_current_block(void *ptr) {
 	for (block_t *b = first_block; b != NULL; b = b->next) {
 		if ((void *)b == ptr)
 			return b;
@@ -163,18 +166,25 @@ block_t*		get_current_block(void *ptr) {
 	return NULL;
 }
 
-// void	ft_free(void *ptr) {
-// 	if (ptr == NULL)
-// 		return;
+void	ft_free(void *ptr) {
+	if (ptr == NULL)
+		return;
 
-// 	block_t*	b = ptr - BLOCK_SIZE;
+	block_t*	b = (void *)ptr - BLOCK_SIZE;
 
-// 	if (get_current_block(ptr) == NULL)
-// 		return;
+	if (get_current_block((void *)b) == NULL)
+		return;
 
-// 	b->is_free = TRUE;
-// 	merge_free_block(b);
-// }
+	b->is_free = TRUE;
+	if (b->prev && b->prev->is_free) {
+		b = merge_free_block(b->prev);
+	}
+	if (b->next) {
+		merge_free_block(b);
+	}
+}
+
+
 
 int main() {
 	printf("malloc 4000 bytes, it must be 4032\n");
@@ -186,11 +196,22 @@ int main() {
 	printf("malloc 1 byte, it must be 40\n");
 	char	*s3 = ft_malloc(sizeof(char));
 
+	printf("malloc 1 byte, it must be 40\n");
+	char	*s4 = ft_malloc(sizeof(char));
+
 	printf("\n");
 
-	printf("--> %d\n", getpagesize() * 32);
+	debug_bar();
+	// show_alloc_mem();
 
-	// debug_bar();
-	show_alloc_mem(); // 1b ? 8b ? ... check this
+	ft_free(s2);
+	ft_free(s3);
+
+	debug_bar();
+
+	char	*s5 = ft_malloc(sizeof(char) * 4096);
+
+	debug_bar();
+	// show_alloc_mem();
 	return 0;
 }
