@@ -8,18 +8,23 @@ block_t*	first_block = NULL;
 /* Debug */
 
 void	debug_bar() {
-	printf("\n--- Debug Mode ---\n");
+	printf("\033[1;32m""\n--- Debug Mode ---\n""\033[0m");
 	if (first_block == NULL) {
 		printf("No blocks allocate!\n");
 		return;
 	}
 
 	size_t total_malloc_len = 0;
+	size_t total_r_allocated_len = 0;
+	size_t total_v_allocated_len = 0;
 
 	printf("Info Mode:\n");
-	printf("---\n[real addr][zone][alloc/free][real bytes][virtual bytes][virtual addr]\n---\n");
 	for (block_t *b = first_block; b != NULL; b = b->next) {
 		total_malloc_len += b->size;
+		if (b->is_free == FALSE) {
+			total_r_allocated_len += b->size;
+			total_v_allocated_len += b->size >= 32 ? b->size - BLOCK_SIZE : b->size;
+		}
 		printf("[%p][%s][%s]", (void *)b, b->zone == TINY ? "TINY" : b->zone == SMALL ? "SMALL" : "LARGE", b->is_free ? "F" : "A");
 		printf("[r: %6zu b]", b->size);
 		printf("[v: %6zu b]", b->size >= 32 ? b->size - BLOCK_SIZE : b->size);
@@ -46,7 +51,9 @@ void	debug_bar() {
 	}
 	printf("]\n\n");
 
-	printf("Total malloc len: %zu bytes\n", total_malloc_len);
+	printf("Total allocate bytes (real):    %zu bytes\n", total_r_allocated_len);
+	printf("Total allocate bytes (virtual): %zu bytes\n", total_v_allocated_len);
+	printf("Total malloc len:               %zu bytes\n", total_malloc_len);
 }
 
 void	show_alloc_mem() {
@@ -122,24 +129,21 @@ void*		ft_malloc(size_t size) {
 	size_t align_size = ALIGN(size);
 	size_t zone_size = DEFINE_BLOCK_SIZE(align_size);
 
-	if (first_block == NULL) {
-		b = mmap(NULL, zone_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-		first_block = b;
-		if (first_block == MAP_FAILED)
+	b = find_free_block(align_size);
+	if (b == NULL) {
+		b = mmap(last_block(), zone_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+		if (b == MAP_FAILED)
 			return NULL;
-		init_block_zone(first_block, zone_size);
+		
+		init_block_zone(b, zone_size);
 		split_block(b, align_size);
-	}
-	else {
-		b = find_free_block(align_size);
-		if (b == NULL) {
+
+		if (!first_block) {
+			first_block = b;
+		}
+		else {
 			block_t *last_b = last_block();
-			b = mmap((void *)last_b, zone_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-			if (first_block == MAP_FAILED)
-				return NULL;
-			init_block_zone(b, zone_size);
-			b->prev = last_b;
-			split_block(b, align_size);
+			last_b->next = b;
 		}
 	}
 	return b ? (void *)b + BLOCK_SIZE : NULL;
@@ -184,34 +188,54 @@ void	ft_free(void *ptr) {
 	}
 }
 
+__attribute__((destructor))
+void	dealloc_free_zone() {
+	block_t	*to_dealloc = NULL;
+	block_t *next_zone = NULL;
+	block_t *curr_zone = first_block;
 
+	while (curr_zone) {
+		for (block_t *b = curr_zone; b != NULL; b = b->next) {
+			if (b->next && b->next->zone != curr_zone->zone) {
+				next_zone = b->next;
+				break;
+			}
+			else if (b->next == NULL) {
+				next_zone = NULL;
+			}
+		}
+		to_dealloc = curr_zone;
+		for (block_t *b = to_dealloc; b->next && b->next != next_zone; b = b->next) {
+			if (b->is_free == FALSE) {
+				to_dealloc = NULL;
+				break;
+			}
+		}
 
-int main() {
-	printf("malloc 4000 bytes, it must be 4032\n");
-	char	*s = ft_malloc(sizeof(char) * 4000);
-
-	printf("malloc 4096 bytes, it must be 4128\n");
-	char	*s2 = ft_malloc(sizeof(char) * 4096);
-
-	printf("malloc 1 byte, it must be 40\n");
-	char	*s3 = ft_malloc(sizeof(char));
-
-	printf("malloc 1 byte, it must be 40\n");
-	char	*s4 = ft_malloc(sizeof(char));
-
-	printf("\n");
-
-	debug_bar();
-	// show_alloc_mem();
-
-	ft_free(s2);
-	ft_free(s3);
-
-	debug_bar();
-
-	char	*s5 = ft_malloc(sizeof(char) * 4096);
-
-	debug_bar();
-	// show_alloc_mem();
-	return 0;
+		if (to_dealloc) {
+			if (munmap(to_dealloc, to_dealloc->size) != 0) {
+				printf("\n\nError: munmap failed\n\n");
+			}
+			to_dealloc = NULL;
+			first_block = next_zone;
+		}
+		curr_zone = next_zone;
+	}
+	if (first_block) 
+		debug_bar();
+	else
+		printf("\nNo more allocated memory\n");
 }
+
+// int main() {
+// 	char	*s = ft_malloc(sizeof(char) * 4000);
+// 	debug_bar();
+
+// 	ft_free(s);
+
+// 	char	*s2 = ft_malloc(sizeof(char) * TINY_ZONE);
+// 	debug_bar();
+
+// 	ft_free(s2);
+// 	return 0;
+// }
