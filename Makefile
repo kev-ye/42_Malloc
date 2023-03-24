@@ -6,7 +6,7 @@
 #    By: kaye <kaye@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/24 11:34:23 by kaye              #+#    #+#              #
-#    Updated: 2023/03/24 12:01:21 by kaye             ###   ########.fr        #
+#    Updated: 2023/03/24 12:27:24 by kaye             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,6 +44,7 @@ endif
 
 NAME 		:= libft_malloc_$(HOSTTYPE).so
 S_LINK		:= libft_malloc.so
+TEST		:= test
 SRC			:= malloc.c \
 			   free.c \
 			   show_alloc_mem.c \
@@ -64,11 +65,15 @@ all: $(NAME)
 
 bonus: all
 
+test: $(NAME)
+	@$(CC) $(CFLAGS) $(IFLAGS) main.c $(S_LINK) -o $(TEST)
+
 clean:
 	@rm -Rf $(BUILD)
 
 fclean: clean
 	@rm -Rf  $(NAME) $(S_LINK)
+	@rm -f $(TEST)
 
 re: fclean all
 
