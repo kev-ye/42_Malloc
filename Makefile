@@ -6,7 +6,7 @@
 #    By: kaye <kaye@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/24 11:34:23 by kaye              #+#    #+#              #
-#    Updated: 2023/03/24 11:58:10 by kaye             ###   ########.fr        #
+#    Updated: 2023/03/24 12:01:21 by kaye             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -55,9 +55,9 @@ OBJ			:= $(SRC:%.c=$(OBJ_DIR)/%.o)
 $(NAME): $(OBJ)
 	@printf "$(CL_LINE)"
 	@echo "[1 / 2] - $(B_MAGENTA)MALLOC - OBJ$(NONE)"
-	@$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJS)
-	@rm -rf $(SLINK)
-	@ln -s $(NAME) $(SLINK) 2>/dev/null
+	@$(CC) $(CFLAGS) -shared -o $(NAME) $(OBJ)
+	@rm -rf $(S_LINK)
+	@ln -s $(NAME) $(S_LINK) 2>/dev/null
 	@echo "[2 / 2] - $(B_MAGENTA)$@$(NONE)"
 
 all: $(NAME)
@@ -68,7 +68,7 @@ clean:
 	@rm -Rf $(BUILD)
 
 fclean: clean
-	@rm -Rf  $(NAME) $(SLINK)
+	@rm -Rf  $(NAME) $(S_LINK)
 
 re: fclean all
 
@@ -77,6 +77,6 @@ $(BUILD):
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD)
 	@printf "$(CL_LINE)Compiling srcs object : $(B_MAGENTA)$< $(NONE)...\r"
-	$(CC) $(CFLAGS) $(IFLAGS) -fPIC -c $< -o $@
+	@$(CC) $(CFLAGS) $(IFLAGS) -fPIC -c $< -o $@
 
 .PHONY: all clean fclean re

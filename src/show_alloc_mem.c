@@ -30,8 +30,6 @@ void	show_alloc_mem_info() {
 			printf("---\n");
 	}
 
-	size_t bar_len, zero = 0;
-
 	printf("\nBar Mode:\n%s: [", first_block->zone == TINY ? "TINY" : first_block->zone == SMALL ? "SMALL" : "LARGE");
 	for (block_t *b = first_block; b != NULL; b = b->next) {
 		if (b->is_free)
