@@ -19,27 +19,10 @@ static void		_init_block_zone(block_t *bz, size_t zsize) {
 	bz->prev = NULL;
 }
 
-static void		_split_block(block_t *current_b, size_t size) {
-	block_t second_b;
-
-	ft_memcpy(&second_b, current_b, BLOCK_SIZE);
-	current_b->zone = second_b.zone;
-	current_b->is_free = FALSE;
-	current_b->size = size + BLOCK_SIZE;
-	current_b->prev = second_b.prev; 
-	current_b->next = (void *)current_b + size + BLOCK_SIZE;
-
-	current_b->next->zone = second_b.zone;
-	current_b->next->is_free = TRUE;
-	current_b->next->size = second_b.size - current_b->size;
-	current_b->next->prev = current_b;
-	current_b->next->next = second_b.next;
-}
-
 static block_t*	_find_free_block(size_t size) {
 	for (block_t *b = first_block; b != NULL; b = b->next) {
 		if (b->is_free && b->size > size + (BLOCK_SIZE * 2)) {
-			_split_block(b, size);
+			split_block(b, size);
 			return b;
 		}
 	}
@@ -61,7 +44,7 @@ void*		ft_malloc(size_t size) {
 			return NULL;
 		
 		_init_block_zone(b, zone_size);
-		_split_block(b, align_size);
+		split_block(b, align_size);
 
 		if (!first_block) {
 			first_block = b;
@@ -71,5 +54,5 @@ void*		ft_malloc(size_t size) {
 			last_b->next = b;
 		}
 	}
-	return b ? (void *)b + BLOCK_SIZE : NULL;
+	return b ? GET_BLOCK(b) : NULL;
 }

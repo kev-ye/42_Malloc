@@ -6,7 +6,7 @@
 #    By: kaye <kaye@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/24 11:34:23 by kaye              #+#    #+#              #
-#    Updated: 2023/03/24 12:27:24 by kaye             ###   ########.fr        #
+#    Updated: 2023/03/24 13:50:24 by kaye             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,8 +46,10 @@ NAME 		:= libft_malloc_$(HOSTTYPE).so
 S_LINK		:= libft_malloc.so
 TEST		:= test
 SRC			:= malloc.c \
+			   realloc.c \
 			   free.c \
 			   show_alloc_mem.c \
+			   common.c \
 			   utils.c
 OBJ			:= $(SRC:%.c=$(OBJ_DIR)/%.o)
 

@@ -48,6 +48,8 @@ enum {
                                 (size + BLOCK_SIZE <= SMALL_BLOCK_SIZE) ? SMALL_ZONE : size + BLOCK_SIZE)
 #define DEFINE_BLOCK_ZONE(zsize) ((zsize <= TINY_ZONE) ? TINY : \
                                 (zsize <= SMALL_ZONE) ? SMALL : LARGE)
+#define GET_BLOCK(ptr) ((void *)ptr - BLOCK_SIZE)
+#define GET_META(ptr) ((void *)ptr + BLOCK_SIZE)
 
 /* -- Structures */
 
@@ -64,15 +66,18 @@ struct s_block {
 
 extern block_t* first_block;
 
-
 /* -- Prototypes */
 
-void*	ft_memcpy(void *dst, const void *src, size_t n);
+void	    split_block(block_t *current_b, size_t size);
+block_t*	merge_free_block(block_t *b);
 
-void*	ft_malloc(size_t size);
-void	ft_free(void *ptr);
+void*	    ft_memcpy(void *dst, const void *src, size_t n);
 
-void	show_alloc_mem(void);
-void	show_alloc_mem_info(void);
+void*   	ft_malloc(size_t size);
+void*       ft_realloc(void *ptr, size_t size);
+void    	ft_free(void *ptr);
+
+void    	show_alloc_mem(void);
+void    	show_alloc_mem_info(void);
 
 #endif

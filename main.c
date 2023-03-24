@@ -1,12 +1,16 @@
 #include "malloc.h"
+// #include <stdlib.h>
 
 int main()
 {
-    ft_malloc(1024);
-    ft_malloc(1024 * 32);
-    ft_malloc(1024 * 1024);
-    ft_malloc(1024 * 1024 * 16);
-    ft_malloc(1024 * 1024 * 128);
-    show_alloc_mem(); 
+    __unused
+    char *s = ft_malloc(4000);
+
+    show_alloc_mem_info();
+
+    __unused
+    char *s2 = ft_realloc(s, 2000);
+
+    show_alloc_mem_info();
     return (0); 
 }

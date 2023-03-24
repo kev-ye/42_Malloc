@@ -1,17 +1,5 @@
 #include "malloc.h"
 
-/* Free */
-
-static block_t*	_merge_free_block(block_t *b) {
-    if (b->next && b->next->is_free) {
-        b->size = b->size + b->next->size;
-        b->next = b->next->next;
-        if (b->next) {
-            b->next->prev = b;
-        }
-    }
-	return b;
-}
 
 static block_t*	_get_current_block(void *ptr) {
 	for (block_t *b = first_block; b != NULL; b = b->next) {
@@ -25,18 +13,16 @@ void	ft_free(void *ptr) {
 	if (ptr == NULL)
 		return;
 
-	block_t*    b = (void *)ptr - BLOCK_SIZE;
+	block_t*    b = GET_META(ptr);
 
-	if (_get_current_block((void *)b) == NULL)
+	if (_get_current_block(b) == NULL)
 		return;
 
 	b->is_free = TRUE;
-	if (b->prev && b->prev->is_free) {
-		b = _merge_free_block(b->prev);
-	}
-	if (b->next) {
-		_merge_free_block(b);
-	}
+	if (b->prev && b->prev->is_free)
+		b = merge_free_block(b->prev);
+	if (b->next)
+		merge_free_block(b);
 }
 
 __attribute__((destructor))
@@ -72,8 +58,8 @@ void	dealloc_free_zone() {
 		}
 		curr_zone = next_zone;
 	}
-	if (first_block) 
-		show_alloc_mem_info();
+	if (first_block) {}
+		// show_alloc_mem_info();
 	else
 		printf("\nNo more allocated memory\n");
 }
