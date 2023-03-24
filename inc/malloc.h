@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <stdio.h> // delete later
 #include <sys/mman.h>
 
 /* -- Macros */
@@ -15,12 +16,12 @@
 */
 #if __SIZEOF_LONG__ == 4
     #define ALIGN(x) ((((x - 1) >> 2) << 2) + __SIZEOF_LONG__)
-    #define TINY_PAGE 4
-    #define SMALL_PAGE 32
+    #define TINY_PAGE 4U
+    #define SMALL_PAGE 32U
 #elif __SIZEOF_LONG__ == 8
     #define ALIGN(x) ((((x - 1) >> 3) << 3) + __SIZEOF_LONG__)
-    #define TINY_PAGE 32
-    #define SMALL_PAGE 128
+    #define TINY_PAGE 32U
+    #define SMALL_PAGE 128U
 #else
     #error "Unsupported system architecture, it should be 32 or 64 bit"
 #endif
@@ -30,8 +31,8 @@
 #define TINY_ZONE getpagesize() * TINY_PAGE
 #define SMALL_ZONE getpagesize() * SMALL_PAGE
 
-#define TINY_BLOCK_SIZE TINY_ZONE / 128
-#define SMALL_BLOCK_SIZE SMALL_ZONE / 128
+#define TINY_BLOCK_SIZE TINY_ZONE / 128U
+#define SMALL_BLOCK_SIZE SMALL_ZONE / 128U
 
 #define TRUE 1
 #define FALSE 0
@@ -59,8 +60,19 @@ struct s_block {
     block_t*    next;
 };
 
+/* -- Global */
+
+extern block_t* first_block;
+
+
 /* -- Prototypes */
 
-void	*ft_memcpy(void *dst, const void *src, size_t n);
+void*	ft_memcpy(void *dst, const void *src, size_t n);
+
+void*	ft_malloc(size_t size);
+void	ft_free(void *ptr);
+
+void	show_alloc_mem(void);
+void	show_alloc_mem_info(void);
 
 #endif
