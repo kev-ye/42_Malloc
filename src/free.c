@@ -2,21 +2,31 @@
 
 
 static block_t*	_get_current_block(void *ptr) {
-	for (block_t *b = first_block; b != NULL; b = b->next) {
+	for (block_t *b = g_first_block; b != NULL; b = b->next) {
 		if ((void *)b == ptr)
 			return b;
 	}
 	return NULL;
 }
 
-void	ft_free(void *ptr) {
+void			_free(void *ptr) {
 	if (ptr == NULL)
 		return;
 
 	block_t*    b = GET_META(ptr);
 
-	if (_get_current_block(b) == NULL)
+
+	// check if the pointer is valid
+	if (_get_current_block(b) == NULL) {
+		ft_putstr_fd(S_YELLOW"Error: invalid pointer\n"S_NONE, STDERR_FILENO);
 		return;
+	}
+
+	// check if the pointer is already free
+	if (b->is_free == TRUE) {
+		ft_putstr_fd(S_YELLOW"Error: double free\n"S_NONE, STDERR_FILENO);
+		return;
+	}
 
 	b->is_free = TRUE;
 	if (b->prev && b->prev->is_free)
@@ -25,22 +35,24 @@ void	ft_free(void *ptr) {
 		merge_free_block(b);
 }
 
+void			free(void *ptr) {
+	pthread_mutex_lock(&g_memory_mutex);
+	_free(ptr);
+	pthread_mutex_unlock(&g_memory_mutex);
+}
+
+/*
+ * Destructor function that will be called when the program exits
+ * It will free all the memory zones that are not used anymore
+ */
 __attribute__((destructor))
-void	dealloc_free_zone() {
+void			dealloc_free_zone() {
 	block_t *to_dealloc = NULL;
 	block_t *next_zone = NULL;
-	block_t *curr_zone = first_block;
+	block_t *curr_zone = g_first_block;
 
 	while (curr_zone) {
-		for (block_t *b = curr_zone; b != NULL; b = b->next) {
-			if (b->next && b->next->zone != curr_zone->zone) {
-				next_zone = b->next;
-				break;
-			}
-			else if (b->next == NULL) {
-				next_zone = NULL;
-			}
-		}
+		next_zone = get_next_zone(curr_zone);
 		to_dealloc = curr_zone;
 		for (block_t *b = to_dealloc; b->next && b->next != next_zone; b = b->next) {
 			if (b->is_free == FALSE) {
@@ -51,15 +63,12 @@ void	dealloc_free_zone() {
 
 		if (to_dealloc) {
 			if (munmap(to_dealloc, to_dealloc->size) != 0) {
-				printf("\n\nError: munmap failed\n\n");
+				ft_putstr_fd(S_YELLOW"Error: munmap failed\n"S_NONE, STDERR_FILENO);
+				return;
 			}
 			to_dealloc = NULL;
-			first_block = next_zone;
+			g_first_block = next_zone;
 		}
 		curr_zone = next_zone;
 	}
-	if (first_block) {}
-		// show_alloc_mem_info();
-	else
-		printf("\nNo more allocated memory\n");
 }

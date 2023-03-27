@@ -18,11 +18,26 @@ void		split_block(block_t *current_b, size_t size) {
 }
 
 block_t*	merge_free_block(block_t *b) {
-    if (b->next && b->next->is_free) {
-        b->size = b->size + b->next->size;
-        b->next = b->next->next;
-        if (b->next)
-            b->next->prev = b;
-    }
+	if (b->next && b->next->is_free) {
+		b->size = b->size + b->next->size;
+		b->next = b->next->next;
+		if (b->next)
+			b->next->prev = b;
+	}
 	return b;
+}
+
+block_t*	get_next_zone(block_t* curr_zone) {
+	block_t*	next_zone = NULL;
+
+	for (block_t *b = curr_zone; b != NULL; b = b->next) {
+		if (b->next && b->next->zone != curr_zone->zone) {
+			next_zone = b->next;
+			break;
+		}
+		else if (b->next == NULL) {
+			next_zone = NULL;
+		}
+	}
+	return next_zone;
 }

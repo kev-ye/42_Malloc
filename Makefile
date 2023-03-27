@@ -6,7 +6,7 @@
 #    By: kaye <kaye@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/24 11:34:23 by kaye              #+#    #+#              #
-#    Updated: 2023/03/24 13:50:24 by kaye             ###   ########.fr        #
+#    Updated: 2023/03/27 16:34:24 by kaye             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,6 +49,8 @@ SRC			:= malloc.c \
 			   realloc.c \
 			   free.c \
 			   show_alloc_mem.c \
+			   show_alloc_mem_info.c \
+			   show_alloc_mem_leak.c \
 			   common.c \
 			   utils.c
 OBJ			:= $(SRC:%.c=$(OBJ_DIR)/%.o)
@@ -67,7 +69,7 @@ all: $(NAME)
 
 bonus: all
 
-test: $(NAME)
+test: main.c $(NAME)
 	@$(CC) $(CFLAGS) $(IFLAGS) main.c $(S_LINK) -o $(TEST)
 
 clean:

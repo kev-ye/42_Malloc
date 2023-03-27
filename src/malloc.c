@@ -1,10 +1,12 @@
 #include "malloc.h"
 
 
-block_t* first_block = NULL;
+block_t*		g_first_block = NULL;
+pthread_mutex_t	g_memory_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 
 static block_t*	_last_block() {
-	block_t *b = first_block;
+	block_t *b = g_first_block;
 
 	for (; b && b->next; b = b->next)
 		;
@@ -20,7 +22,7 @@ static void		_init_block_zone(block_t *bz, size_t zsize) {
 }
 
 static block_t*	_find_free_block(size_t size) {
-	for (block_t *b = first_block; b != NULL; b = b->next) {
+	for (block_t *b = g_first_block; b != NULL; b = b->next) {
 		if (b->is_free && b->size > size + (BLOCK_SIZE * 2)) {
 			split_block(b, size);
 			return b;
@@ -29,7 +31,7 @@ static block_t*	_find_free_block(size_t size) {
 	return NULL;
 }
 
-void*		ft_malloc(size_t size) {
+void*			_malloc(size_t size) {
 	if (size <= 0)
 		return NULL;
 
@@ -46,8 +48,8 @@ void*		ft_malloc(size_t size) {
 		_init_block_zone(b, zone_size);
 		split_block(b, align_size);
 
-		if (!first_block) {
-			first_block = b;
+		if (!g_first_block) {
+			g_first_block = b;
 		}
 		else {
 			block_t *last_b = _last_block();
@@ -55,4 +57,15 @@ void*		ft_malloc(size_t size) {
 		}
 	}
 	return b ? GET_BLOCK(b) : NULL;
+}
+
+void			*malloc(size_t size)
+{
+	void	*ptr = NULL;
+
+	pthread_mutex_lock(&g_memory_mutex);
+	ptr = _malloc(size);
+	pthread_mutex_unlock(&g_memory_mutex);
+
+	return (ptr);
 }
