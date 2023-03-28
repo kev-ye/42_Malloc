@@ -6,7 +6,7 @@
 #    By: kaye <kaye@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/24 11:34:23 by kaye              #+#    #+#              #
-#    Updated: 2023/03/27 16:34:24 by kaye             ###   ########.fr        #
+#    Updated: 2023/03/27 17:30:13 by kaye             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,7 @@ B_CYAN 			= \033[1;36m
 CC 			= clang
 CFLAGS		= -Wall -Wextra -Werror
 IFLAGS 		= -I./inc
+DBFLAG		= 0
 
 # DIRECTORIES
 
@@ -67,7 +68,10 @@ $(NAME): $(OBJ)
 
 all: $(NAME)
 
-bonus: all
+bonus: $(NAME)
+
+debug: DBFLAG = 1
+debug: $(NAME)
 
 test: main.c $(NAME)
 	@$(CC) $(CFLAGS) $(IFLAGS) main.c $(S_LINK) -o $(TEST)
@@ -86,6 +90,6 @@ $(BUILD):
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD)
 	@printf "$(CL_LINE)Compiling srcs object : $(B_MAGENTA)$< $(NONE)...\r"
-	@$(CC) $(CFLAGS) $(IFLAGS) -fPIC -c $< -o $@
+	@$(CC) $(CFLAGS) $(IFLAGS) -fPIC -c $< -o $@ -D DEBUG=$(DBFLAG)
 
 .PHONY: all clean fclean re

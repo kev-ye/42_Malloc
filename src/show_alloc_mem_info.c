@@ -14,12 +14,12 @@ static void		_info(block_t *b) {
 
 	// [real size]
 	ft_putstr_fd("[r: "S_GREEN, STDOUT_FILENO);
-	ft_putnbr_fd(b->size, STDOUT_FILENO, 6);
+	ft_putnbr_fd(b->size, STDOUT_FILENO, 10);
 	ft_putstr_fd(S_NONE" b]", STDOUT_FILENO);
 
 	// [virtual size]
 	ft_putstr_fd("[v: "S_GREEN, STDOUT_FILENO);
-	ft_putnbr_fd(b->size >= 32 ? b->size - BLOCK_SIZE : b->size, STDOUT_FILENO, 6);
+	ft_putnbr_fd(b->size >= 32 ? b->size - BLOCK_SIZE : b->size, STDOUT_FILENO, 10);
 	ft_putstr_fd(S_NONE" b]", STDOUT_FILENO);
 }
 
@@ -32,7 +32,7 @@ static void		_info_mode(size_t* tml, size_t* tral, size_t* tval) {
 			*tval += b->size >= 32 ? b->size - BLOCK_SIZE : b->size;
 		}
 		_info(b);
-		if (b->next) {
+		if (b->next || b->is_free == FALSE) {
 			ft_putstr_fd("[va: "S_GREEN, STDOUT_FILENO);
 			ft_putaddr_fd((void *)b + BLOCK_SIZE, STDOUT_FILENO);
 			ft_putstr_fd(S_NONE"]\n", STDOUT_FILENO);

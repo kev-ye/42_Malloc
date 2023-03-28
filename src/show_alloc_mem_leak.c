@@ -23,11 +23,11 @@ void	_show_alloc_mem_leak(void) {
 				r_total += b->size;
 				++index;
 				ft_putstr_fd("Leak #"S_RED, STDOUT_FILENO);
-				ft_putnbr_fd(index, STDOUT_FILENO, 6);
+				ft_putnbr_fd(index, STDOUT_FILENO, 10);
 				ft_putstr_fd(S_NONE": ["S_YELLOW, STDOUT_FILENO);
 				ft_putaddr_fd((void *)b + BLOCK_SIZE, STDOUT_FILENO);
 				ft_putstr_fd(S_NONE"]["S_YELLOW, STDOUT_FILENO);
-				ft_putnbr_fd(b->size >= 32 ? b->size - BLOCK_SIZE : b->size, STDOUT_FILENO, 6);
+				ft_putnbr_fd(b->size >= 32 ? b->size - BLOCK_SIZE : b->size, STDOUT_FILENO, 10);
 				ft_putstr_fd(S_NONE" b]\n", STDOUT_FILENO);
 			}
 		}

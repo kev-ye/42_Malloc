@@ -1,24 +1,37 @@
 #include "malloc.h"
 
 void		split_block(block_t *current_b, size_t size) {
-	block_t second_b;
+	block_t	old_b;
+	size_t	diff_size;
 
-	ft_memcpy(&second_b, current_b, BLOCK_SIZE);
-	current_b->zone = second_b.zone;
+	ft_memcpy(&old_b, current_b, BLOCK_SIZE);
+	current_b->zone = old_b.zone;
 	current_b->is_free = FALSE;
 	current_b->size = size + BLOCK_SIZE;
-	current_b->prev = second_b.prev; 
-	current_b->next = (void *)current_b + size + BLOCK_SIZE;
+	current_b->prev = old_b.prev;
 
-	current_b->next->zone = second_b.zone;
+	if (old_b.size - current_b->size == 0)
+		return;
+	current_b->next = (void *)current_b + size + BLOCK_SIZE;
+	current_b->next->zone = old_b.zone;
 	current_b->next->is_free = TRUE;
-	current_b->next->size = second_b.size - current_b->size;
+	diff_size = old_b.size - current_b->size;
+	if (diff_size != 0 && diff_size < BLOCK_SIZE) {
+		current_b->next->size = diff_size + old_b.next->size;
+		current_b->next->next = old_b.next->next;
+	}
+	else {
+		current_b->next->size = diff_size;
+		current_b->next->next = old_b.next;
+	}
 	current_b->next->prev = current_b;
-	current_b->next->next = second_b.next;
 }
 
 block_t*	merge_free_block(block_t *b) {
-	if (b->next && b->next->is_free) {
+	if (b &&
+			b->next &&
+			b->next->is_free &&
+			b->next->zone == b->zone) {
 		b->size = b->size + b->next->size;
 		b->next = b->next->next;
 		if (b->next)

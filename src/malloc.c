@@ -42,8 +42,13 @@ void*			_malloc(size_t size) {
 	b = _find_free_block(align_size);
 	if (b == NULL) {
 		b = mmap(_last_block(), zone_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-		if (b == MAP_FAILED)
+		if (b == MAP_FAILED) {
+			if (DEBUG) {
+				ft_putstr_fd(S_RED"Error: "S_NONE"mmap() failed", STDOUT_FILENO);
+				ft_putstr_fd("\n", STDOUT_FILENO);
+			}
 			return NULL;
+		}
 		
 		_init_block_zone(b, zone_size);
 		split_block(b, align_size);
@@ -59,13 +64,26 @@ void*			_malloc(size_t size) {
 	return b ? GET_BLOCK(b) : NULL;
 }
 
-void			*malloc(size_t size)
-{
+void			*malloc(size_t size) {
+	if (DEBUG) {
+		ft_putstr_fd("\n-- "S_CYAN"Malloc()"S_NONE" called: ", STDOUT_FILENO);
+		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
+		ft_putnbr_fd(size, STDOUT_FILENO, 0);
+		ft_putstr_fd(S_NONE" bytes]", STDOUT_FILENO);
+		ft_putstr_fd("\n", STDOUT_FILENO);
+	}
+
 	void	*ptr = NULL;
 
 	pthread_mutex_lock(&g_memory_mutex);
 	ptr = _malloc(size);
 	pthread_mutex_unlock(&g_memory_mutex);
 
+	if (DEBUG) {
+		ft_putstr_fd("  -> "S_CYAN"Malloc()"S_NONE" returned:", STDOUT_FILENO);
+		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
+		ft_putaddr_fd(ptr, STDOUT_FILENO);
+		ft_putstr_fd(S_NONE"]\n\n", STDOUT_FILENO);
+	}
 	return (ptr);
 }

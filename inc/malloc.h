@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <stdio.h> // delete later
 #include <pthread.h>
 #include <sys/mman.h>
 
@@ -55,8 +56,8 @@ enum {
 								(size + BLOCK_SIZE <= SMALL_BLOCK_SIZE) ? SMALL_ZONE : size + BLOCK_SIZE)
 #define DEFINE_BLOCK_ZONE(zsize) ((zsize <= TINY_ZONE) ? TINY : \
 								(zsize <= SMALL_ZONE) ? SMALL : LARGE)
-#define GET_BLOCK(ptr) ((void *)ptr - BLOCK_SIZE)
-#define GET_META(ptr) ((void *)ptr + BLOCK_SIZE)
+#define GET_BLOCK(ptr) ((void *)ptr + BLOCK_SIZE)
+#define GET_META(ptr) ((void *)ptr - BLOCK_SIZE)
 
 /* -- Structures */
 
