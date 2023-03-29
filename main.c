@@ -1,22 +1,20 @@
 #include "malloc.h"
-#include <stdlib.h>
-#include <stdio.h>
+// #include <stdlib.h>
+#include <string.h>
+
 
 int main(void) {
     malloc(16);
-
-    // printf("s: [%s]\n", s);
     show_alloc_mem_info();
-    // // printf("s: [%p]\n", s);
 
     char *s = malloc(10000);
-
     show_alloc_mem_info();
 
-    realloc(s, 524212);
-
-    // printf("s: [%s]\n", s);
+    s = realloc(s, 524212);
     show_alloc_mem_info();
-    // printf("s: [%p]\n", s);
+
+    free(s);
+
+    show_alloc_mem_leak();
     return (0);
 }

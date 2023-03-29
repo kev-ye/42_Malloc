@@ -15,7 +15,7 @@ static block_t*	_last_block() {
 
 static void		_init_block_zone(block_t *bz, size_t zsize) {
 	bz->zone = DEFINE_BLOCK_ZONE(zsize);
-	bz->is_free = FALSE;
+	bz->alloc_status = IS_ALLOCATED;
 	bz->size = zsize;
 	bz->next = NULL;
 	bz->prev = NULL;
@@ -23,7 +23,7 @@ static void		_init_block_zone(block_t *bz, size_t zsize) {
 
 static block_t*	_find_free_block(size_t size) {
 	for (block_t *b = g_first_block; b != NULL; b = b->next) {
-		if (b->is_free && b->size > size + (BLOCK_SIZE * 2)) {
+		if (b->alloc_status == IS_FREE && b->size > size + (BLOCK_SIZE * 2)) {
 			split_block(b, size);
 			return b;
 		}
@@ -66,7 +66,7 @@ void*			_malloc(size_t size) {
 
 void			*malloc(size_t size) {
 	if (DEBUG) {
-		ft_putstr_fd("\n-- "S_CYAN"Malloc()"S_NONE" called: ", STDOUT_FILENO);
+		ft_putstr_fd("\n-- "S_CYAN"malloc()"S_NONE" called: ", STDOUT_FILENO);
 		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
 		ft_putnbr_fd(size, STDOUT_FILENO, 0);
 		ft_putstr_fd(S_NONE" bytes]", STDOUT_FILENO);
@@ -79,11 +79,5 @@ void			*malloc(size_t size) {
 	ptr = _malloc(size);
 	pthread_mutex_unlock(&g_memory_mutex);
 
-	if (DEBUG) {
-		ft_putstr_fd("  -> "S_CYAN"Malloc()"S_NONE" returned:", STDOUT_FILENO);
-		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
-		ft_putaddr_fd(ptr, STDOUT_FILENO);
-		ft_putstr_fd(S_NONE"]\n\n", STDOUT_FILENO);
-	}
 	return (ptr);
 }

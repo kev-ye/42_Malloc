@@ -1,4 +1,5 @@
 #include "malloc.h"
+#include <stdio.h>
 
 static void*	_realloc(void *ptr, size_t size) {
 	if (ptr == NULL)
@@ -9,13 +10,14 @@ static void*	_realloc(void *ptr, size_t size) {
 	size_t		align_size = ALIGN(size);
 	void*		new_ptr = NULL;
 
-	if (old_block->is_free == TRUE) {
-		ft_putstr_fd(S_YELLOW"Error"S_NONE": realloc() called on a free block\n", STDERR_FILENO);
+	if (old_block->alloc_status == IS_FREE) {
+		ft_putstr_fd(S_YELLOW"realloc()"S_NONE": called on a free block\n", STDERR_FILENO);
 		return NULL;
 	}
 
 	if (old_block->size == align_size + BLOCK_SIZE)
 		return ptr;
+
 
 	if (old_block->size > align_size + BLOCK_SIZE) {
 		split_block(old_block, align_size);
@@ -25,10 +27,10 @@ static void*	_realloc(void *ptr, size_t size) {
 	}
 
 	if (old_block->next &&
-			old_block->next->is_free == TRUE &&
+			old_block->next->alloc_status == IS_FREE &&
 			old_block->next->size + old_block->size >= align_size + BLOCK_SIZE &&
 			old_block->next->zone == old_block->zone) {
-		old_block->is_free = TRUE;
+		old_block->alloc_status = IS_FREE;
 		merge_free_block(old_block);
 		split_block(old_block, align_size);
 		return ptr;
@@ -45,13 +47,13 @@ static void*	_realloc(void *ptr, size_t size) {
 
 void*			realloc(void *ptr, size_t size) {
 	if (DEBUG) {
-		ft_putstr_fd("\n-- "S_CYAN"Realloc()"S_NONE" called: ", STDOUT_FILENO);
+		ft_putstr_fd("\n-- "S_CYAN"realloc()"S_NONE" called: ", STDOUT_FILENO);
 		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
 		ft_putnbr_fd(size, STDOUT_FILENO, 0);
 		ft_putstr_fd(S_NONE" bytes]", STDOUT_FILENO);
 		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
 		ft_putaddr_fd(ptr, STDOUT_FILENO);
-		ft_putstr_fd(S_NONE" bytes]", STDOUT_FILENO);
+		ft_putstr_fd(S_NONE"]", STDOUT_FILENO);
 		ft_putstr_fd("\n", STDOUT_FILENO);
 	}
 
@@ -61,11 +63,5 @@ void*			realloc(void *ptr, size_t size) {
 	new_ptr = _realloc(ptr, size);
 	pthread_mutex_unlock(&g_memory_mutex);
 
-	if (DEBUG) {
-		ft_putstr_fd("   -> "S_CYAN"Realloc()"S_NONE" returned:", STDOUT_FILENO);
-		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
-		ft_putaddr_fd(new_ptr, STDOUT_FILENO);
-		ft_putstr_fd(S_NONE"]\n\n", STDOUT_FILENO);
-	}
 	return (new_ptr);
 }

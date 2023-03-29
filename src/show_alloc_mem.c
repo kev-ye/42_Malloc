@@ -1,7 +1,7 @@
 #include "malloc.h"
 
 
-void	_show_alloc_mem(void) {
+static void	_show_alloc_mem(void) {
 	if (g_first_block == NULL)
 		return;
 
@@ -13,7 +13,7 @@ void	_show_alloc_mem(void) {
 	ft_putaddr_fd(g_first_block, STDOUT_FILENO);
 	ft_putstr_fd("\n", STDOUT_FILENO);
 	for (block_t *b = g_first_block; b != NULL; b = b->next) {
-		if (b->is_free == FALSE) {
+		if (b->alloc_status == IS_ALLOCATED) {
 			size_t	vsize_count = b->size >= BLOCK_SIZE ? b->size - BLOCK_SIZE : b->size;
 			ft_putaddr_fd((void *)b + BLOCK_SIZE, STDOUT_FILENO);
 			ft_putstr_fd(" - ", STDOUT_FILENO);

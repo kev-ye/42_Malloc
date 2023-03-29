@@ -6,7 +6,7 @@ void		split_block(block_t *current_b, size_t size) {
 
 	ft_memcpy(&old_b, current_b, BLOCK_SIZE);
 	current_b->zone = old_b.zone;
-	current_b->is_free = FALSE;
+	current_b->alloc_status = IS_ALLOCATED;
 	current_b->size = size + BLOCK_SIZE;
 	current_b->prev = old_b.prev;
 
@@ -14,7 +14,7 @@ void		split_block(block_t *current_b, size_t size) {
 		return;
 	current_b->next = (void *)current_b + size + BLOCK_SIZE;
 	current_b->next->zone = old_b.zone;
-	current_b->next->is_free = TRUE;
+	current_b->next->alloc_status = IS_FREE;
 	diff_size = old_b.size - current_b->size;
 	if (diff_size != 0 && diff_size < BLOCK_SIZE) {
 		current_b->next->size = diff_size + old_b.next->size;
@@ -30,7 +30,7 @@ void		split_block(block_t *current_b, size_t size) {
 block_t*	merge_free_block(block_t *b) {
 	if (b &&
 			b->next &&
-			b->next->is_free &&
+			b->next->alloc_status == IS_FREE &&
 			b->next->zone == b->zone) {
 		b->size = b->size + b->next->size;
 		b->next = b->next->next;

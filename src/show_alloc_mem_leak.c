@@ -1,7 +1,7 @@
 #include "malloc.h"
 
 
-void	_show_alloc_mem_leak(void) {
+static void	_show_alloc_mem_leak(void) {
 	block_t*	curr_zone = g_first_block;
 	block_t*	next_zone = NULL;
 
@@ -17,8 +17,8 @@ void	_show_alloc_mem_leak(void) {
 
 	while (curr_zone) {
 		next_zone = get_next_zone(curr_zone);
-		for (block_t *b = curr_zone; b->next && b->next != next_zone; b = b->next) {
-			if (b->is_free == FALSE) {
+		for (block_t *b = curr_zone; b != NULL; b = b->next) {
+			if (b->alloc_status == IS_ALLOCATED) {
 				v_total += b->size >= 32 ? b->size - BLOCK_SIZE : b->size;
 				r_total += b->size;
 				++index;
@@ -30,6 +30,8 @@ void	_show_alloc_mem_leak(void) {
 				ft_putnbr_fd(b->size >= 32 ? b->size - BLOCK_SIZE : b->size, STDOUT_FILENO, 10);
 				ft_putstr_fd(S_NONE" b]\n", STDOUT_FILENO);
 			}
+			if (b->next && b->next == next_zone)
+				break;
 		}
 		curr_zone = next_zone;
 	}
