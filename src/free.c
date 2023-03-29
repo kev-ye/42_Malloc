@@ -1,9 +1,9 @@
 #include "malloc.h"
 
 
-static block_t*	_get_current_block(void *ptr) {
+static block_t*	_get_current_block(block_t *block) {
 	for (block_t *b = g_first_block; b != NULL; b = b->next) {
-		if ((void *)b == ptr)
+		if (b == block)
 			return b;
 	}
 	return NULL;
@@ -69,11 +69,13 @@ void			dealloc_free_zone() {
 	while (curr_zone) {
 		next_zone = get_next_zone(curr_zone);
 		to_dealloc = curr_zone;
-		for (block_t *b = to_dealloc; b->next && b->next != next_zone; b = b->next) {
+		for (block_t *b = to_dealloc; b != NULL; b = b->next) {
 			if (b->is_free == FALSE) {
 				to_dealloc = NULL;
 				break;
 			}
+			if (b->next && b->next != next_zone)
+				break;
 		}
 	
 

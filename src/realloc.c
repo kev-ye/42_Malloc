@@ -17,7 +17,7 @@ static void*	_realloc(void *ptr, size_t size) {
 	if (old_block->size == align_size + BLOCK_SIZE)
 		return ptr;
 
-	if (old_block->size >= align_size + BLOCK_SIZE) {
+	if (old_block->size > align_size + BLOCK_SIZE) {
 		split_block(old_block, align_size);
 		free_block = old_block->next;
 		merge_free_block(free_block);
@@ -48,6 +48,9 @@ void*			realloc(void *ptr, size_t size) {
 		ft_putstr_fd("\n-- "S_CYAN"Realloc()"S_NONE" called: ", STDOUT_FILENO);
 		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
 		ft_putnbr_fd(size, STDOUT_FILENO, 0);
+		ft_putstr_fd(S_NONE" bytes]", STDOUT_FILENO);
+		ft_putstr_fd("["S_GREEN, STDOUT_FILENO);
+		ft_putaddr_fd(ptr, STDOUT_FILENO);
 		ft_putstr_fd(S_NONE" bytes]", STDOUT_FILENO);
 		ft_putstr_fd("\n", STDOUT_FILENO);
 	}

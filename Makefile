@@ -47,6 +47,7 @@ NAME 		:= libft_malloc_$(HOSTTYPE).so
 S_LINK		:= libft_malloc.so
 TEST		:= test
 SRC			:= malloc.c \
+			   calloc.c \
 			   realloc.c \
 			   free.c \
 			   show_alloc_mem.c \

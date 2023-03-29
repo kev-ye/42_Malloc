@@ -28,8 +28,8 @@
 	#define SMALL_PAGE 32U
 #elif __SIZEOF_LONG__ == 8
 	#define ALIGN(x) ((((x - 1) >> 3) << 3) + __SIZEOF_LONG__)
-	#define TINY_PAGE 32U
-	#define SMALL_PAGE 128U
+	#define TINY_PAGE 4U
+	#define SMALL_PAGE 32U
 #else
 	#error "Unsupported system architecture, it should be 32 or 64 bit"
 #endif
@@ -84,6 +84,7 @@ block_t*	get_next_zone(block_t* curr_zone);
 
 // utils
 void*		ft_memcpy(void *dst, const void *src, size_t n);
+void*		ft_memset(void *b, int c, size_t len);
 void		ft_putstr_fd(const char *s, int fd);
 void		ft_putnbr_fd(size_t n, int fd, size_t padding);
 void		ft_putaddr_fd(const void *addr, int fd);
@@ -94,6 +95,7 @@ void		_free(void *ptr);
 
 // mandatory
 void*		malloc(size_t size);
+void*		calloc(size_t count, size_t size);
 void*		realloc(void *ptr, size_t size);
 void		free(void *ptr);
 

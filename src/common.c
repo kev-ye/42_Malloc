@@ -54,3 +54,11 @@ block_t*	get_next_zone(block_t* curr_zone) {
 	}
 	return next_zone;
 }
+
+block_t*	get_current_block(block_t *block) {
+	for (block_t *b = g_first_block; b != NULL; b = b->next) {
+		if (b == block)
+			return b;
+	}
+	return NULL;
+}
