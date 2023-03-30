@@ -5,7 +5,6 @@
 
 #include <stdint.h>
 #include <unistd.h>
-#include <stdio.h> // delete later
 #include <pthread.h>
 #include <sys/mman.h>
 

@@ -1,5 +1,5 @@
 #include "malloc.h"
-#include <stdio.h>
+
 
 static void*	_realloc(void *ptr, size_t size) {
 	if (ptr == NULL)
